@@ -127,7 +127,6 @@ async def get_items(db: AsyncSession = Depends(get_db)):
     items = await list_items(db)
     # SQLAlchemy 2.0: convert ORM models to schemas
     return [ItemOut(id=i.id, name=i.name) for i in items]
-    ItemOut(id=i.id, name=i.name, description=i.description)
 
 
 @app.post("/items", response_model=ItemOut, status_code=201)
@@ -141,7 +140,6 @@ async def post_item(payload: ItemCreate, db: AsyncSession = Depends(get_db)) -> 
         # Uniqueness conflict (duplicate name)
         logger.warning(f"Failed to create item '{payload.name}': already exists")
         raise HTTPException(status_code=409, detail="Item already exists") from e
-        ItemOut(id=i.id, name=i.name, description=i.description)
 
 
 @app.delete("/items/{item_id}", status_code=204)
