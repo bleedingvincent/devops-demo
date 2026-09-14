@@ -12,16 +12,14 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [newItemName, setNewItemName] = useState('')
+  const [description, setDescription] = useState('');
 
-  // Load items from API
   const fetchItems = async () => {
     setLoading(true)
     setError(null)
     try {
       const response = await fetch(`${API_URL}/items`)
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
       const data = await response.json()
       setItems(data)
     } catch (err) {
@@ -31,16 +29,13 @@ function App() {
     }
   }
 
-  // Create new item
-  const createItem = async name => {
+  const createItem = async (name, desc) => {
     setError(null)
     try {
       const response = await fetch(`${API_URL}/items`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, description: desc }),
       })
 
       if (!response.ok) {
@@ -48,7 +43,8 @@ function App() {
         throw new Error(errorData.detail || `HTTP error! status: ${response.status}`)
       }
 
-      const newItem = await response.json()
+      const newItem = await response.json() 
+      setDescription('');
       setItems(prev => [...prev, newItem])
       return newItem
     } catch (err) {
@@ -57,44 +53,30 @@ function App() {
     }
   }
 
-  // Delete item
   const deleteItem = async id => {
     setError(null)
     try {
-      const response = await fetch(`${API_URL}/items/${id}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
+      const response = await fetch(`${API_URL}/items/${id}`, { method: 'DELETE' })
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
       setItems(prev => prev.filter(item => item.id !== id))
     } catch (err) {
       setError(err.message || 'Failed to delete item')
-      // Don't throw error further to avoid unhandled rejections
     }
   }
 
-  // Handle form submit
   const handleSubmit = async e => {
     e.preventDefault()
     if (!newItemName.trim()) {
       setError('Item name cannot be empty')
       return
     }
-
     try {
-      await createItem(newItemName.trim())
+      await createItem(newItemName.trim(), description.trim())
       setNewItemName('')
-    } catch {
-      // Error already set in createItem
-    }
+    } catch { }
   }
 
-  // Load items on component mount
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial data fetch on mount
     fetchItems()
   }, [])
 
@@ -103,7 +85,6 @@ function App() {
       <header>
         <h1>DevOps Demo - Items Manager</h1>
       </header>
-
       <main>
         <section className="form-section">
           <h2>Add New Item</h2>
@@ -115,17 +96,20 @@ function App() {
               placeholder="Enter item name"
               disabled={loading}
             />
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Item description"
+              disabled={loading}
+            />
             <button type="submit" disabled={loading || !newItemName.trim()}>
               Add Item
             </button>
           </form>
         </section>
 
-        {error && (
-          <div className="error" role="alert">
-            {error}
-          </div>
-        )}
+        {error && <div className="error" role="alert">{error}</div>}
 
         <section className="items-section">
           <h2>Items ({items.length})</h2>
@@ -137,15 +121,15 @@ function App() {
             <ul className="items-list">
               {items.map(item => (
                 <li key={item.id} className="item">
-                  <span>{item.name}</span>
+                  <span>
+                    <strong>{item.name}</strong>
+                    {item.description ? <span> - {item.description}</span> : null}
+                  </span>
                   <button
                     onClick={() => {
-                      if (window.confirm(`Delete "${item.name}"?`)) {
-                        deleteItem(item.id)
-                      }
+                      if (window.confirm(`Delete "${item.name}"?`)) deleteItem(item.id)
                     }}
                     disabled={loading}
-                    aria-label={`Delete ${item.name}`}
                   >
                     Delete
                   </button>
