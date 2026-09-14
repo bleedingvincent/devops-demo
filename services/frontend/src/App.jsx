@@ -12,7 +12,6 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [newItemName, setNewItemName] = useState('')
-  const [description, setDescription] = useState('');
 
   // Load items from API
   const fetchItems = async () => {
@@ -32,8 +31,8 @@ function App() {
     }
   }
 
-  // Create new item (Тепер приймає і ім'я, і опис)
-  const createItem = async (name, desc) => {
+  // Create new item
+  const createItem = async name => {
     setError(null)
     try {
       const response = await fetch(`${API_URL}/items`, {
@@ -41,8 +40,7 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        // ТУТ ВИПРАВЛЕНО: тепер відправляємо і name, і description
-        body: JSON.stringify({ name: name, description: desc }),
+        body: JSON.stringify({ name }),
       })
 
       if (!response.ok) {
@@ -50,10 +48,7 @@ function App() {
         throw new Error(errorData.detail || `HTTP error! status: ${response.status}`)
       }
 
-      // Отримуємо створений елемент з бази (щоб мати правильний ID)
-      const newItem = await response.json() 
-      
-      setDescription('');
+      const newItem = await response.json()
       setItems(prev => [...prev, newItem])
       return newItem
     } catch (err) {
@@ -77,6 +72,7 @@ function App() {
       setItems(prev => prev.filter(item => item.id !== id))
     } catch (err) {
       setError(err.message || 'Failed to delete item')
+      // Don't throw error further to avoid unhandled rejections
     }
   }
 
@@ -89,8 +85,7 @@ function App() {
     }
 
     try {
-      // ТУТ ВИПРАВЛЕНО: передаємо опис у функцію
-      await createItem(newItemName.trim(), description.trim())
+      await createItem(newItemName.trim())
       setNewItemName('')
     } catch {
       // Error already set in createItem
@@ -120,13 +115,6 @@ function App() {
               placeholder="Enter item name"
               disabled={loading}
             />
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Item description"
-              disabled={loading}
-            />
             <button type="submit" disabled={loading || !newItemName.trim()}>
               Add Item
             </button>
@@ -148,12 +136,8 @@ function App() {
           {!loading && items.length > 0 && (
             <ul className="items-list">
               {items.map(item => (
-                // ТУТ ВИПРАВЛЕНО: коректна структура тегів
                 <li key={item.id} className="item">
-                  <span>
-                    <strong>{item.name}</strong>
-                    {item.description ? <span> - {item.description}</span> : null}
-                  </span>
+                  <span>{item.name}</span>
                   <button
                     onClick={() => {
                       if (window.confirm(`Delete "${item.name}"?`)) {
