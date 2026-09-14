@@ -1,15 +1,15 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 class ItemBase(BaseModel):
     name: str
 
 class ItemCreate(ItemBase):
-    description: str | None = Field(None, max_length=500)
+    description: str | None = None
 
-class ItemOut(BaseModel):
+class ItemOut(ItemBase):
     id: int
-    name: str
     description: str | None = None
 
     class Config:
         from_attributes = True
+        orm_mode = True
