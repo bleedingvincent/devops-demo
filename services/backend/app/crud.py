@@ -20,7 +20,8 @@ async def count_items(db: AsyncSession) -> int:
 
 
 async def create_item(db: AsyncSession, data: ItemCreate) -> Item:
-    item = Item(name=data.name)
+    # ТУТ ЗМІНА: Додано description=data.description
+    item = Item(name=data.name, description=data.description)
     db.add(item)
     try:
         # flush assigns the primary key while still inside the transaction;
