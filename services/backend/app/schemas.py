@@ -10,4 +10,4 @@ class ItemCreate(BaseModel):
 class ItemOut(BaseModel):
     id: int
     name: str
-    description: str | None = None
+    description: str | None = Field(None, max_length=500)
