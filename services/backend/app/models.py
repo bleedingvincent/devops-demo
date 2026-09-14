@@ -8,5 +8,7 @@ class Base(DeclarativeBase):
 
 class Item(Base):
     __tablename__ = "items"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    name: Mapped[str] = mapped_column(index=True)
+    description: Mapped[str | None] = mapped_column(String(500), nullable=True)
