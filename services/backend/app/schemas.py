@@ -9,7 +9,7 @@ class ItemCreate(ItemBase):
 class ItemOut(BaseModel):
     id: int
     name: str
-    description: str | None = Field(None, max_length=500)
+    description: str | None = None
 
     class Config:
         from_attributes = True
