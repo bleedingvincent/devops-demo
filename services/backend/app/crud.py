@@ -20,8 +20,8 @@ async def count_items(db: AsyncSession) -> int:
 
 
 async def create_item(db: AsyncSession, data: ItemCreate) -> Item:
-    db_item = models.Item(name=item.name, description=item.description)
     item = Item(name=data.name)
+    db_item = Item(name=data.name, description=data.description)
     db.add(item)
     try:
         # flush assigns the primary key while still inside the transaction;
