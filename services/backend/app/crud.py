@@ -20,20 +20,14 @@ async def count_items(db: AsyncSession) -> int:
 
 
 async def create_item(db: AsyncSession, data: ItemCreate) -> Item:
-    # ТУТ ЗМІНА: Додано description=data.description
     item = Item(name=data.name, description=data.description)
     db.add(item)
     try:
-        # flush assigns the primary key while still inside the transaction;
-        # expire_on_commit=False keeps the attributes live after commit, so
-        # no post-commit refresh roundtrip is needed
         await db.flush()
         await db.commit()
     except IntegrityError:
         await db.rollback()
         raise
-    # emit-after-commit (RFC-0001 D3): the event is only published once the
-    # row is durably committed, never before
     broadcaster.publish(ItemEventPayload(event_type="created", item_id=item.id, item_name=item.name, event_time=datetime.now(UTC)))
     return item
 
